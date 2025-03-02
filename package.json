@@ -1,6 +1,6 @@
 {
   "name": "fs-lock-file",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Cross platform lock file",
   "main": "index.js",
   "imports": {
