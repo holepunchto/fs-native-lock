@@ -33,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/holepunchto/fs-native-lock/issues"
   },
-  "homepage": "https://github.com/holepunchto/fs-native-lock"
+  "homepage": "https://github.com/holepunchto/fs-native-lock",
+  "devDependencies": {
+    "standard": "^17.1.2"
+  }
 }
