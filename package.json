@@ -1,5 +1,5 @@
 {
-  "name": "fs-lock-file",
+  "name": "fs-native-lock",
   "version": "1.0.0",
   "description": "Cross platform lock file",
   "main": "index.js",
@@ -26,12 +26,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/holepunchto/fs-lock-file.git"
+    "url": "https://github.com/holepunchto/fs-native-lock.git"
   },
   "author": "Holepunch Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/holepunchto/fs-lock-file/issues"
+    "url": "https://github.com/holepunchto/fs-native-lock/issues"
   },
-  "homepage": "https://github.com/holepunchto/fs-lock-file"
+  "homepage": "https://github.com/holepunchto/fs-native-lock"
 }

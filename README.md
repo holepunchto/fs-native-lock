@@ -1,15 +1,15 @@
-# fs-lock-file
+# fs-native-lock
 
 Cross platform lock file
 
 ```
-npm install fs-lock-file
+npm install fs-native-lock
 ```
 
 ## Usage
 
 ``` js
-const LockFile = require('fs-lock-file')
+const LockFile = require('fs-native-lock')
 ```
 
 ## License
