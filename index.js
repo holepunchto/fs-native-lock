@@ -13,12 +13,26 @@ module.exports = class LockFile {
     this.locking = null
     this.opening = null
     this.closed = false
+    this._waitInterval = 500
   }
 
   _open () {
     if (this.opening) return this.opening
     this.opening = this._openFile()
     return this.opening
+  }
+
+  async wait () {
+    const lock = await new Promise((resolve) => {
+      const interval = setInterval(() => {
+        fs.open(this.filename, 'r+', (err, fd) => {
+          if (err) return
+          clearInterval(interval)
+          resolve(fd)
+        }, this._waitInterval)
+      })
+    })
+    fs.close(lock)
   }
 
   async lock () {
