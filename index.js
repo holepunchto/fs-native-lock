@@ -37,13 +37,16 @@ module.exports = class LockFile {
 
   async _lock (wait) {
     const fd = await open(this.filename)
-    if (this._wait) await fsx.waitForLock(fd)
 
     try {
       if (this.closed) throw new Error('Lock is closed')
-      const existing = LOCKS.get(this.filename)
-      if (existing && existing !== this) throw new Error('ELOCKED: ' + this.filename)
-      if (!fsx.tryLock(fd)) throw new Error('ELOCKED: ' + this.filename)
+      if (this._wait) {
+        await fsx.waitForLock(fd)
+      } else {
+        const existing = LOCKS.get(this.filename)
+        if (existing && existing !== this) throw new Error('ELOCKED: ' + this.filename)
+        if (!fsx.tryLock(fd)) throw new Error('ELOCKED: ' + this.filename)
+      }
     } catch (err) {
       await close(fd)
       throw err
