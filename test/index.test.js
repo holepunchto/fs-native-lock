@@ -1,13 +1,12 @@
 const LockFile = require('..')
 const test = require('brittle')
 const tmp = require('test-tmp')
-const Hypercore = require('hypercore')
 const path = require('path')
 
 test('lock and unlock', async (t) => {
   const tmpDir = await tmp()
 
-  const lock = new LockFile(path.join(tmpDir, 'LOCK'))
+  const lock = new LockFile(path.join(tmpDir, 'lock'))
 
   t.ok(lock.fd === 0)
   t.ok(!lock.locked)
@@ -23,31 +22,28 @@ test('lock and unlock', async (t) => {
   t.ok(!lock.locked)
 })
 
-test('if not waited, it cant use busy lock', async (t) => {
+test('try to lock without busy lockfile', async (t) => {
   t.plan(1)
   const tmpDir = await tmp()
-  const core = new Hypercore(tmpDir)
-  await core.ready()
+  const lockA = new LockFile(path.join(tmpDir, 'lock'))
+  const lockB = new LockFile(path.join(tmpDir, 'lock'), { wait: false })
 
-  const lock = new LockFile(path.join(tmpDir, 'LOCK'))
-
-  core.close()
-  t.exception(async () => {
-    await lock.lock()
-  })
+  await lockA.lock()
+  t.exception(async () => await lockB.lock())
 })
 
-test('wait for freed RocksDB lock', async (t) => {
+test('wait for lock', async (t) => {
+  t.plan(2)
   const tmpDir = await tmp()
-  const core = new Hypercore(tmpDir)
-  await core.ready()
+  const lockA = new LockFile(path.join(tmpDir, 'lock'))
+  const lockB = new LockFile(path.join(tmpDir, 'lock'), { wait: true })
 
-  const lock = new LockFile(path.join(tmpDir, 'LOCK'))
-  const unlocked = lock.wait()
-  core.close()
-  await unlocked
-  await lock.lock()
+  await lockA.lock()
 
-  t.ok(lock.fd !== 0)
-  t.ok(lock.locked)
+  setTimeout(async () => await lockA.unlock(), 1000)
+
+  await lockB.lock()
+
+  t.ok(!lockA.locked)
+  t.ok(lockB.locked)
 })

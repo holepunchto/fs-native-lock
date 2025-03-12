@@ -37,7 +37,6 @@
   "homepage": "https://github.com/holepunchto/fs-native-lock",
   "devDependencies": {
     "brittle": "^3.12.1",
-    "hypercore": "^11.0.44",
     "standard": "^17.1.2",
     "test-tmp": "^1.4.0"
   }

@@ -6,14 +6,14 @@ const path = require('path')
 const LOCKS = new Map()
 
 module.exports = class LockFile {
-  constructor (filename) {
+  constructor (filename, opts = {}) {
     this.filename = path.resolve(filename)
     this.fd = 0
     this.locked = false
     this.locking = null
     this.opening = null
     this.closed = false
-    this._waitInterval = 500
+    this._wait = opts.wait
   }
 
   _open () {
@@ -22,25 +22,12 @@ module.exports = class LockFile {
     return this.opening
   }
 
-  async wait () {
-    const lock = await new Promise((resolve) => {
-      const interval = setInterval(() => {
-        fs.open(this.filename, 'r+', (err, fd) => {
-          if (err) return
-          clearInterval(interval)
-          resolve(fd)
-        }, this._waitInterval)
-      })
-    })
-    fs.close(lock)
-  }
-
   async lock () {
     if (this.locking) return this.locking
     if (this.locked) return
 
     try {
-      this.locking = this._lock()
+      this.locking = this._lock(this._wait)
       await this.locking
     } catch (err) {
       this.locking = null
@@ -48,8 +35,9 @@ module.exports = class LockFile {
     }
   }
 
-  async _lock () {
+  async _lock (wait) {
     const fd = await open(this.filename)
+    if (this._wait) await fsx.waitForLock(fd)
 
     try {
       if (this.closed) throw new Error('Lock is closed')
