@@ -6,9 +6,10 @@ const path = require('path')
 const LOCKS = new Map()
 
 module.exports = class LockFile {
-  constructor (filename) {
+  constructor (filename, { wait = false } = {}) {
     this.filename = path.resolve(filename)
     this.fd = 0
+    this.wait = wait
     this.locked = false
     this.locking = null
     this.opening = null
@@ -34,14 +35,24 @@ module.exports = class LockFile {
     }
   }
 
+  _tryLock (fd) {
+    const existing = LOCKS.get(this.filename)
+    if (existing && existing !== this) return false
+    if (!fsx.tryLock(fd)) return false
+    return true
+  }
+
   async _lock () {
     const fd = await open(this.filename)
 
     try {
-      if (this.closed) throw new Error('Lock is closed')
-      const existing = LOCKS.get(this.filename)
-      if (existing && existing !== this) throw new Error('ELOCKED: ' + this.filename)
-      if (!fsx.tryLock(fd)) throw new Error('ELOCKED: ' + this.filename)
+      while (true) {
+        if (this.closed) throw new Error('Lock is closed')
+        if (this._tryLock(fd)) break
+        if (!this.wait) throw new Error('ELOCKED: ' + this.filename)
+        // TODO: move away from a poll to waitForLock
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
     } catch (err) {
       await close(fd)
       throw err
