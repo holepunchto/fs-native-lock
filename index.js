@@ -1,6 +1,7 @@
 const fsx = require('fs-native-extensions')
 const fs = require('fs')
 const path = require('path')
+const onexit = require('resource-on-exit')
 
 // needed as fd locks are process wide...
 const LOCKS = new Map()
@@ -44,6 +45,7 @@ module.exports = class LockFile {
 
   async _lock () {
     const fd = await open(this.filename)
+    onexit.add(this, closeSync)
 
     try {
       while (true) {
@@ -54,6 +56,7 @@ module.exports = class LockFile {
         await new Promise(resolve => setTimeout(resolve, 500))
       }
     } catch (err) {
+      onexit.remove(this)
       await close(fd)
       throw err
     }
@@ -74,6 +77,7 @@ module.exports = class LockFile {
     LOCKS.delete(this.filename)
     this.fd = 0
     this.locked = false
+    onexit.remove(this)
     await close(fd)
   }
 }
@@ -91,4 +95,11 @@ function close (fd) {
   return new Promise(resolve => {
     fs.close(fd, () => resolve())
   })
+}
+
+function closeSync (lock) {
+  const fd = lock.fd
+  if (!fd) return
+  lock.fd = 0
+  fs.closeSync(fd)
 }

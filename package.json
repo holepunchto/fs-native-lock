@@ -19,7 +19,8 @@
   "dependencies": {
     "bare-fs": "^4.0.1",
     "bare-path": "^3.0.0",
-    "fs-native-extensions": "^1.3.4"
+    "fs-native-extensions": "^1.3.4",
+    "resource-on-exit": "^1.0.0"
   },
   "scripts": {
     "test": "standard"
